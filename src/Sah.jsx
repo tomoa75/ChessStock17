@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Chessboard } from "react-chessboard";
 import { Chess } from "chess.js";
 
-const STOCKFISH_URL = "/stockfish/stockfish-17.1-lite-single.js";
+// Izbriši staru liniju i stavi ovu:
+const STOCKFISH_URL = `${import.meta.env.BASE_URL}stockfish/stockfish-17.1-lite-single.js`;
 const ANALYSIS_DEPTH = 12;
 const MULTI_PV = 3;
 const MAIN_LINE_ID = "main";
@@ -90,7 +91,6 @@ function parseAnalysisLine(line, fen) {
 export default function ChessGame() {
   const engineRef = useRef(null);
   const fenRef = useRef("");
-  const audioContextRef = useRef(null);
 
   const [lines, setLines] = useState([
     { id: MAIN_LINE_ID, name: "Glavna linija", moves: [] },
@@ -237,8 +237,6 @@ export default function ChessGame() {
 
       if (move === null) return false;
 
-      playMoveSound();
-
       if (isAtLatestMove) {
         const updatedHistory = [...moveHistory, move];
 
@@ -285,33 +283,6 @@ export default function ChessGame() {
     }
 
     return line.moves.map((move) => move.san).join(" ");
-  }
-
-  function playMoveSound() {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-
-    if (!AudioContext) return;
-
-    const audioContext =
-      audioContextRef.current || new AudioContext();
-    audioContextRef.current = audioContext;
-
-    const oscillator = audioContext.createOscillator();
-    const gain = audioContext.createGain();
-    const now = audioContext.currentTime;
-
-    oscillator.type = "triangle";
-    oscillator.frequency.setValueAtTime(620, now);
-    oscillator.frequency.exponentialRampToValueAtTime(360, now + 0.08);
-
-    gain.gain.setValueAtTime(0.001, now);
-    gain.gain.exponentialRampToValueAtTime(0.54, now + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
-
-    oscillator.connect(gain);
-    gain.connect(audioContext.destination);
-    oscillator.start(now);
-    oscillator.stop(now + 0.1);
   }
 
   return (
